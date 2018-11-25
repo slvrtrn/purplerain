@@ -7,13 +7,13 @@
 #define WIDTH 640
 #define HEIGHT 480
 #define RAND_VELOCITY 10000
-#define VELOCITY_FACTOR 10
+#define VELOCITY_FACTOR 5
 #define LENGTH_FACTOR 5
 #define MAX_WIDTH 2
 #define MAX_COLORS 4
 #define RGB 3
-#define SPLASH_STEP M_PI / 240
-#define SPLASH_RANGE 20
+#define SPLASH_STEP (M_PI / 30)
+#define SPLASH_RANGE 2
 
 #define DEBUG 0
 
@@ -52,7 +52,7 @@ void init_raindrop(raindrop_t *p, uint8_t ps_colors[MAX_COLORS][RGB]) {
   p->width = (int) (random() % MAX_WIDTH + 1);
   p->length = p->width * LENGTH_FACTOR;
   double dv = (double) (random() % RAND_VELOCITY) / (double) RAND_VELOCITY;
-  p->velocity = ((double) p->width / VELOCITY_FACTOR) + dv;
+  p->velocity = ((double) p->width * VELOCITY_FACTOR) + dv;
 
 #if DEBUG == 1
   printf("V %lf DV %lf\n", p->velocity, dv);
@@ -108,8 +108,6 @@ int main() {
   int is_running = 1;
   while (is_running != 0) {
 
-    printf("Frametime %d\n", sdl->frame_time);
-
     // BG
     SDL_SetRenderDrawColor(sdl->renderer, bg_colors[0], bg_colors[1], bg_colors[2], SDL_ALPHA_OPAQUE);
     SDL_RenderClear(sdl->renderer);
@@ -152,11 +150,8 @@ int main() {
 
           // Same color as ancestor's raindrop
           SDL_SetRenderDrawColor(sdl->renderer, drops[i]->r, drops[i]->g, drops[i]->b, SDL_ALPHA_OPAQUE);
-          // Sometimes 2px line will be drawed instead of single point for better effect
-          SDL_RenderDrawLine(sdl->renderer,
-                             (int) splashes[i]->x, (int) splashes[i]->y,
-                             (int) x, (int) y
-          );
+          SDL_RenderDrawPoint(sdl->renderer,
+                              (int) splashes[i]->x, (int) splashes[i]->y);
 
           splashes[i]->x = x;
           splashes[i]->y = y;
@@ -185,6 +180,8 @@ int main() {
           break;
       }
     }
+
+    delay_frame(sdl);
   }
 
   shutdown_sdl(sdl);
